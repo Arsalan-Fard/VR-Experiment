@@ -8,7 +8,8 @@ public class BoxChoiceManager : MonoBehaviour
     public DoorManager doorManager;
 
     [Header("Visibility Control")]
-    public GameObject gatedObject; // hidden before choice, shown after
+    // public GameObject gatedObject; 
+    // hidden before choice, shown after
 
     [Header("Start Room Door Auto-Close")]
     public DoorManager startRoomDoorManager;  // optional; if null, uses doorManager
@@ -24,7 +25,7 @@ public class BoxChoiceManager : MonoBehaviour
         if (choosePanel) choosePanel.SetActive(true);
         if (nextPanel) nextPanel.SetActive(false);
 
-        if (gatedObject) gatedObject.SetActive(false);
+        // if (gatedObject) gatedObject.SetActive(false);
     }
 
     public void ChooseBlack() => Choose();
@@ -40,7 +41,7 @@ public class BoxChoiceManager : MonoBehaviour
         if (nextPanel) nextPanel.SetActive(true);
 
         // Reveal gated object
-        if (gatedObject) gatedObject.SetActive(true);
+        // if (gatedObject) gatedObject.SetActive(true);
 
         // Open the door now
         if (doorManager) doorManager.Open();

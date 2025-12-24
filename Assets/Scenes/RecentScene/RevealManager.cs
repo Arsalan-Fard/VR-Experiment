@@ -1,56 +1,72 @@
-using System.Collections;
 using UnityEngine;
 
 public class RevealManager : MonoBehaviour
 {
-    [Header("Door")]
+    [Header("Door at this location")]
     public DoorManager doorManager;
 
     [Header("XR Rig / XR Origin")]
-    public Transform xrOrigin; // drag your XR Origin here
+    public Transform xrOrigin;
 
-    [Header("Reset Pose (from your screenshot)")]
-    public Vector3 resetPosition = new Vector3(2.782f, 0f, -3.672f);
-    public Vector3 resetEulerAngles = new Vector3(0f, 0f, 0f);
+    [Header("State Machine")]
+    public ExperimentStateManager stateManager;
 
-    [Header("Timing")]
-    public float secondsBeforeReset = 20f;
+    [Header("Reveal UI (World Space Canvases)")]
+    public GameObject failUI;      // disabled by default
+    public GameObject successUI;   // disabled by default
 
     [Header("Behavior")]
-    public bool triggerOnce = true;
+    public bool triggerOncePerCondition = true;
+    public bool closeDoorOnConditionStart = true;
 
-    bool _triggered;
-    Coroutine _resetRoutine;
+    private bool _isActiveRevealTrigger = false;
+    private bool _showSuccessThisCondition = false;
+    private bool _triggeredThisCondition = false;
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other) => TryTrigger(other);
+    private void OnTriggerStay(Collider other)  => TryTrigger(other); // fixes “already inside” issue
+
+    private void TryTrigger(Collider other)
     {
-        if (triggerOnce && _triggered) return;
-        if (!doorManager || !xrOrigin) return;
+        if (!_isActiveRevealTrigger) return;
+        if (triggerOncePerCondition && _triggeredThisCondition) return;
+        if (!xrOrigin || !stateManager) return;
 
-        // Accept either the XR Origin itself or any child collider (hands/camera, etc.)
-        if (other.transform != xrOrigin && !other.transform.IsChildOf(xrOrigin)) return;
+        // Only react to XR rig (or its children like camera/hands)
+        if (other.transform != xrOrigin && !other.transform.IsChildOf(xrOrigin))
+            return;
 
-        _triggered = true;
+        _triggeredThisCondition = true;
 
-        // Open door (reveal)
-        doorManager.Open();
+        if (doorManager != null)
+            doorManager.Open();
+        else
+            Debug.LogWarning($"[RevealManager] doorManager is not assigned on {name}.");
 
-        // Start/reset timer to reposition user
-        if (_resetRoutine != null) StopCoroutine(_resetRoutine);
-        _resetRoutine = StartCoroutine(ResetAfterDelay());
+        // UI toggles (no text updates)
+        if (failUI) failUI.SetActive(!_showSuccessThisCondition);
+        if (successUI) successUI.SetActive(_showSuccessThisCondition);
+
+        stateManager.OnRevealReached();
+
+        Debug.Log($"[RevealManager] Triggered at {name}. Success={_showSuccessThisCondition}");
     }
 
-    IEnumerator ResetAfterDelay()
+    /// <summary>
+    /// Called by the state machine when a condition starts.
+    /// </summary>
+    public void ConfigureForCondition(bool activeRevealTrigger, bool showSuccess)
     {
-        yield return new WaitForSeconds(secondsBeforeReset);
+        _isActiveRevealTrigger = activeRevealTrigger;
+        _showSuccessThisCondition = showSuccess;
+        _triggeredThisCondition = false;
 
-        // Reset XR Origin pose
-        xrOrigin.SetPositionAndRotation(
-            resetPosition,
-            Quaternion.Euler(resetEulerAngles)
-        );
+        // Hide both UIs whenever condition changes / arms
+        if (failUI) failUI.SetActive(false);
+        if (successUI) successUI.SetActive(false);
 
-        // Optional: if you want to re-trigger again after reset, set triggerOnce = false
-        // or manually set _triggered = false here.
+        // Force a known door state each condition (prevents “sometimes” issues)
+        if (closeDoorOnConditionStart && doorManager != null)
+            doorManager.SetOpenImmediate(false);
     }
 }

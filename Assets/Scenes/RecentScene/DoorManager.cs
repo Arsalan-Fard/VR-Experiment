@@ -2,9 +2,14 @@ using UnityEngine;
 
 public class DoorManager : MonoBehaviour
 {
-    public Transform door;         // rotating part
+    public Transform door;
     public float openAngle = -90f;
     public float speed = 2f;
+
+    [Header("Startup Behaviour")]
+    [Tooltip("Default OFF = old behaviour: editor pose is CLOSED. " +
+             "ON = editor pose is OPEN and door starts open at runtime.")]
+    public bool editorPoseIsOpenAndStartOpen = false;   // ONE TOGGLE
 
     Quaternion _closed;
     Quaternion _open;
@@ -12,24 +17,46 @@ public class DoorManager : MonoBehaviour
 
     void Awake()
     {
-        if (door == null)
+        if (!door)
         {
             door = transform;
             Debug.LogWarning("[DoorManager] 'door' not assigned. Defaulting to this.transform.", this);
         }
-        _closed = door.rotation;
-        _open = Quaternion.Euler(door.eulerAngles + new Vector3(0f, openAngle, 0f));
+
+        var baseEuler = door.eulerAngles;
+
+        if (!editorPoseIsOpenAndStartOpen)
+        {
+            // --- Original behaviour (unchanged) ---
+            // Editor pose = CLOSED
+            _closed = door.rotation;
+            _open   = Quaternion.Euler(baseEuler + new Vector3(0f, openAngle, 0f));
+            _isOpen = false;
+        }
+        else
+        {
+            // --- New behaviour ---
+            // Editor pose = OPEN
+            _open   = door.rotation;
+            _closed = Quaternion.Euler(baseEuler - new Vector3(0f, openAngle, 0f));
+            // If it closes the wrong direction, flip to + instead of -
+            _isOpen = true;
+        }
+
+        // Snap to initial logical state so there is no pop on first frame
+        door.rotation = _isOpen ? _open : _closed;
     }
 
     void Update()
     {
         if (!door) return;
+
         var target = _isOpen ? _open : _closed;
         door.rotation = Quaternion.Slerp(door.rotation, target, Time.deltaTime * speed);
     }
 
-    public void Open()  { _isOpen = true;  }
-    public void Close() { _isOpen = false; }
+    public void Open()  => _isOpen = true;
+    public void Close() => _isOpen = false;
 
     public void SetOpenImmediate(bool open)
     {

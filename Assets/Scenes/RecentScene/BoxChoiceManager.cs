@@ -7,13 +7,25 @@ public class BoxChoiceManager : MonoBehaviour
     public GameObject nextPanel;
     public DoorManager doorManager;
 
-    [Header("Visibility Control")]
-    // public GameObject gatedObject; 
-    // hidden before choice, shown after
-
     [Header("Start Room Door Auto-Close")]
     public DoorManager startRoomDoorManager;  // optional; if null, uses doorManager
     public float closeAfterSeconds = 30f;
+
+    [Header("Optional: Reset cubes at condition start")]
+    public Transform cubeBlack;
+    public Transform cubeWhite;
+
+    [Tooltip("Where black cube should be placed on reset.")]
+    public Transform cubeBlackSpawn;
+
+    [Tooltip("Where white cube should be placed on reset.")]
+    public Transform cubeWhiteSpawn;
+
+    [Tooltip("Optional; if not assigned, we try GetComponent<Rigidbody>() from cube transforms.")]
+    public Rigidbody cubeBlackRb;
+
+    [Tooltip("Optional; if not assigned, we try GetComponent<Rigidbody>() from cube transforms.")]
+    public Rigidbody cubeWhiteRb;
 
     private bool _chosen;
     private Coroutine _closeRoutine;
@@ -24,8 +36,6 @@ public class BoxChoiceManager : MonoBehaviour
 
         if (choosePanel) choosePanel.SetActive(true);
         if (nextPanel) nextPanel.SetActive(false);
-
-        // if (gatedObject) gatedObject.SetActive(false);
     }
 
     public void ChooseBlack() => Choose();
@@ -36,12 +46,8 @@ public class BoxChoiceManager : MonoBehaviour
         if (_chosen) return;
         _chosen = true;
 
-        // UI transition
         if (choosePanel) choosePanel.SetActive(false);
         if (nextPanel) nextPanel.SetActive(true);
-
-        // Reveal gated object
-        // if (gatedObject) gatedObject.SetActive(true);
 
         // Open the door now
         if (doorManager) doorManager.Open();
@@ -61,5 +67,57 @@ public class BoxChoiceManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         if (dm != null) dm.Close();
+    }
+
+    // -----------------------------
+    // New: deterministic reset API
+    // -----------------------------
+    public void ResetChoice(bool closeDoorImmediately = true)
+    {
+        _chosen = false;
+
+        if (_closeRoutine != null)
+        {
+            StopCoroutine(_closeRoutine);
+            _closeRoutine = null;
+        }
+
+        if (choosePanel) choosePanel.SetActive(true);
+        if (nextPanel) nextPanel.SetActive(false);
+
+        // Close doors for a clean start
+        if (closeDoorImmediately)
+        {
+            if (doorManager) doorManager.SetOpenImmediate(false);
+
+            var doorToClose = startRoomDoorManager != null ? startRoomDoorManager : doorManager;
+            if (doorToClose != null) doorToClose.SetOpenImmediate(false);
+        }
+
+        // Reset cubes back to spawn points (prevents "fell to -millions" persisting)
+        ResetCube(cubeBlack, cubeBlackSpawn, ref cubeBlackRb);
+        ResetCube(cubeWhite, cubeWhiteSpawn, ref cubeWhiteRb);
+
+        Debug.Log("[Experiment] Box choice reset");
+    }
+
+    private static void ResetCube(Transform cube, Transform spawn, ref Rigidbody rb)
+    {
+        if (cube == null || spawn == null) return;
+
+        // Acquire RB if not assigned
+        if (rb == null) rb = cube.GetComponent<Rigidbody>();
+
+        // Move cube
+        cube.position = spawn.position;
+        cube.rotation = spawn.rotation;
+
+        // Stabilize physics
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.Sleep();
+        }
     }
 }

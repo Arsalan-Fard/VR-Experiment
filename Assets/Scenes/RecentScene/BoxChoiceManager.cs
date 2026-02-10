@@ -49,6 +49,9 @@ public class BoxChoiceManager : MonoBehaviour
         if (choosePanel) choosePanel.SetActive(false);
         if (nextPanel) nextPanel.SetActive(true);
 
+        // Hide boxes after the choice is made
+        SetCubesVisible(false);
+
         // Open the door now
         if (doorManager) doorManager.Open();
 
@@ -94,11 +97,18 @@ public class BoxChoiceManager : MonoBehaviour
             if (doorToClose != null) doorToClose.SetOpenImmediate(false);
         }
 
-        // Reset cubes back to spawn points (prevents "fell to -millions" persisting)
+        // Re-enable cubes FIRST so Rigidbody is active, then reset positions
+        SetCubesVisible(true);
         ResetCube(cubeBlack, cubeBlackSpawn, ref cubeBlackRb);
         ResetCube(cubeWhite, cubeWhiteSpawn, ref cubeWhiteRb);
 
         Debug.Log("[Experiment] Box choice reset");
+    }
+
+    private void SetCubesVisible(bool visible)
+    {
+        if (cubeBlack != null) cubeBlack.gameObject.SetActive(visible);
+        if (cubeWhite != null) cubeWhite.gameObject.SetActive(visible);
     }
 
     private static void ResetCube(Transform cube, Transform spawn, ref Rigidbody rb)
@@ -108,16 +118,24 @@ public class BoxChoiceManager : MonoBehaviour
         // Acquire RB if not assigned
         if (rb == null) rb = cube.GetComponent<Rigidbody>();
 
-        // Move cube
-        cube.position = spawn.position;
-        cube.rotation = spawn.rotation;
-
-        // Stabilize physics
         if (rb != null)
         {
-            rb.velocity = Vector3.zero;
+            // Temporarily go kinematic so physics doesn't fight the teleport
+            bool wasKinematic = rb.isKinematic;
+            rb.isKinematic = true;
+
+            cube.position = spawn.position;
+            cube.rotation = spawn.rotation;
+
+            rb.isKinematic = wasKinematic;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.Sleep();
+        }
+        else
+        {
+            cube.position = spawn.position;
+            cube.rotation = spawn.rotation;
         }
     }
 }

@@ -864,6 +864,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7646005754713256299, guid: cf065fd461adb42a4be3f8400c3d8fe6, type: 3}
+      propertyPath: door
+      value: 
+      objectReference: {fileID: 693553082113960390}
     - target: {fileID: 8956334740762696020, guid: cf065fd461adb42a4be3f8400c3d8fe6, type: 3}
       propertyPath: m_Name
       value: Start -_ Waiting Door
@@ -877,6 +881,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cf065fd461adb42a4be3f8400c3d8fe6, type: 3}
+--- !u!4 &693553082113960390 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1811736750409386485, guid: cf065fd461adb42a4be3f8400c3d8fe6, type: 3}
+  m_PrefabInstance: {fileID: 1205674024863768627}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1122219327860382416 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2245473959625210595, guid: cf065fd461adb42a4be3f8400c3d8fe6, type: 3}

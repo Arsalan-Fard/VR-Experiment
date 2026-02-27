@@ -54,10 +54,10 @@ public class SequenceSelectionUI : MonoBehaviour
     public Camera             headCamera;
 
     [Tooltip("How far in front of the camera the menu appears (metres).")]
-    public float              menuDistance = 1.5f;
+    public float              menuDistance = 1.0f;
 
     [Tooltip("Vertical offset from camera height (metres). Positive = higher.")]
-    public float              menuHeightOffset = 1f;
+    public float              menuHeightOffset = -0.5f;
 
     // ── private state ──────────────────────────────────────────────────────────
     private bool _initialized          = false;

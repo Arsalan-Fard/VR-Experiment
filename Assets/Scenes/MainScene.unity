@@ -188,6 +188,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StayOnPlaneToAdvance
   playerBodyCollider: {fileID: 166720547}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  horizontalMargin: 0.15
   stateManager: {fileID: 1153987637}
 --- !u!65 &10999065
 BoxCollider:
@@ -1480,6 +1483,9 @@ MonoBehaviour:
   - triggerZone: {fileID: 573816411}
     turnstile: {fileID: 6702883663674560368}
   playerBodyCollider: {fileID: 166720547}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  headTriggerRadius: 0.15
   openDelays:
   - 30
   - 45
@@ -3113,7 +3119,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &302327378
 GameObject:
@@ -4209,7 +4215,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &395057702
 GameObject:
@@ -7358,7 +7364,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &585059113
 GameObject:
@@ -7940,7 +7946,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &610590590
 GameObject:
@@ -9224,7 +9230,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &778041279
 Transform:
   m_ObjectHideFlags: 0
@@ -9302,6 +9308,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StayOnPlaneToAdvance
   playerBodyCollider: {fileID: 0}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  horizontalMargin: 0.15
   stateManager: {fileID: 0}
 --- !u!65 &786823047
 BoxCollider:
@@ -9655,7 +9664,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &835609578
 GameObject:
@@ -9764,7 +9773,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &863504107
 GameObject:
@@ -9901,6 +9910,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1178791450436251564, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_RequestedTrackingOriginMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1316853283282549446, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -9963,7 +9976,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2190828208922718286, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2626757739553014894, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_IsActive
@@ -11581,7 +11594,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &1086284109
 GameObject:
@@ -14385,6 +14398,9 @@ MonoBehaviour:
   - triggerZone: {fileID: 1712724287}
     turnstile: {fileID: 6702883662646030270}
   playerBodyCollider: {fileID: 166720547}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  headTriggerRadius: 0.15
   openDelays:
   - 30
   - 45
@@ -14677,6 +14693,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomManager
   playerBodyCollider: {fileID: 166720547}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  headTriggerRadius: 0.15
   lockSeconds: 90
   isGlassRoom: 1
   glassRoomObject: {fileID: 1290526096725498311}
@@ -15055,7 +15074,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1 &1410044292
 GameObject:
@@ -16201,6 +16220,9 @@ MonoBehaviour:
   - triggerZone: {fileID: 1328135199}
     turnstile: {fileID: 1491180256}
   playerBodyCollider: {fileID: 0}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  headTriggerRadius: 0.15
   openDelays:
   - 5
   defaultOpenDelay: 5
@@ -20764,7 +20786,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1001 &1726325789
 PrefabInstance:
@@ -21947,7 +21969,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.9999999, z: 0}
+  m_Size: {x: 1, y: 1.9999999, z: 0.2}
   m_Center: {x: 0, y: 0.49999994, z: 0.5}
 --- !u!1001 &1825945902
 PrefabInstance:
@@ -23106,6 +23128,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StayOnPlaneToAdvance
   playerBodyCollider: {fileID: 0}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  horizontalMargin: 0.15
   stateManager: {fileID: 0}
 --- !u!65 &1886980643
 BoxCollider:
@@ -23762,7 +23787,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1919647119
 Transform:
   m_ObjectHideFlags: 0
@@ -25774,6 +25799,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomManager
   playerBodyCollider: {fileID: 166720547}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  headTriggerRadius: 0.15
   lockSeconds: 90
   isGlassRoom: 1
   glassRoomObject: {fileID: 1852671403}
@@ -27826,7 +27854,7 @@ MonoBehaviour:
   m_StartingHoverFilters: []
   m_StartingSelectFilters: []
   m_StartingInteractionStrengthFilters: []
-  m_TeleportationProvider: {fileID: 0}
+  m_TeleportationProvider: {fileID: 871826090}
   m_MatchOrientation: 0
   m_MatchDirectionalInput: 1
   m_TeleportTrigger: 0
@@ -32290,6 +32318,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomManager
   playerBodyCollider: {fileID: 166720547}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  headTriggerRadius: 0.15
   lockSeconds: 90
   isGlassRoom: 1
   glassRoomObject: {fileID: 521791198}
@@ -32310,6 +32341,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomManager
   playerBodyCollider: {fileID: 166720547}
+  playerHead: {fileID: 0}
+  useHeadPositionFallback: 1
+  headTriggerRadius: 0.15
   lockSeconds: 90
   isGlassRoom: 1
   glassRoomObject: {fileID: 998821867}

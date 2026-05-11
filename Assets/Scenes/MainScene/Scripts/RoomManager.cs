@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI; // for Graphic (UI + TMP UGUI visuals)
@@ -9,6 +10,15 @@ public class RoomManager : MonoBehaviour
     [Header("Player collider (recommended)")]
     [Tooltip("Assign the XR Origin's CharacterController object collider (or a dedicated PlayerBody collider).")]
     public Collider playerBodyCollider; // best: a single collider, not hands
+
+    [Tooltip("Optional headset/camera transform. Used as a fallback for physical room-scale walking.")]
+    public Transform playerHead;
+
+    [Tooltip("Also start the room trigger when the headset position enters this trigger volume.")]
+    public bool useHeadPositionFallback = true;
+
+    [Tooltip("Small radius around the headset position for fallback trigger checks.")]
+    public float headTriggerRadius = 0.15f;
 
     [Header("Timing")]
     public float lockSeconds = 5f;
@@ -53,6 +63,8 @@ public class RoomManager : MonoBehaviour
 
     private void Awake()
     {
+        ResolvePlayerHead();
+
         _triggerCollider = GetComponent<Collider>();
         if (_triggerCollider == null)
             Debug.LogError($"[RoomManager] ({name}) No Collider found on this GameObject!", this);
@@ -71,6 +83,15 @@ public class RoomManager : MonoBehaviour
         if (isGlassRoom && glassRoomObject != null)
             glassRoomObject.SetActive(false);
 
+    }
+
+    private void Update()
+    {
+        if (_running || !useHeadPositionFallback || playerHead == null)
+            return;
+
+        if (IsHeadInsideTrigger())
+            StartCoroutine(LockCycle());
     }
 
     private void OnTriggerEnter(Collider other)
@@ -94,6 +115,37 @@ public class RoomManager : MonoBehaviour
     {
         // Strict match: only the collider you assigned can trigger the room lock
         return playerBodyCollider != null && other == playerBodyCollider;
+    }
+
+    private bool IsHeadInsideTrigger()
+    {
+        if (_triggerCollider == null || !_triggerCollider.enabled || !_triggerCollider.gameObject.activeInHierarchy)
+            return false;
+
+        Vector3 point = playerHead.position;
+        Vector3 closest = _triggerCollider.ClosestPoint(point);
+        float radius = Mathf.Max(0.001f, headTriggerRadius);
+        return (closest - point).sqrMagnitude <= radius * radius;
+    }
+
+    private void ResolvePlayerHead()
+    {
+        if (playerHead != null)
+            return;
+
+#if UNITY_2023_1_OR_NEWER
+        var origin = UnityEngine.Object.FindFirstObjectByType<XROrigin>();
+#else
+        var origin = UnityEngine.Object.FindObjectOfType<XROrigin>();
+#endif
+        if (origin != null && origin.Camera != null)
+        {
+            playerHead = origin.Camera.transform;
+            return;
+        }
+
+        if (Camera.main != null)
+            playerHead = Camera.main.transform;
     }
 
     private IEnumerator LockCycle()

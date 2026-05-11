@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 
 /// <summary>
@@ -31,6 +32,15 @@ public class BarrierManager : MonoBehaviour
     [Header("Player")]
     [Tooltip("Assign the XR Origin body collider so only the player triggers barriers")]
     public Collider playerBodyCollider;
+
+    [Tooltip("Optional headset/camera transform. Used as a fallback for physical room-scale walking.")]
+    public Transform playerHead;
+
+    [Tooltip("Also open barriers when the headset position enters the trigger volume.")]
+    public bool useHeadPositionFallback = true;
+
+    [Tooltip("Small radius around the headset position for fallback trigger checks.")]
+    public float headTriggerRadius = 0.15f;
 
     [Header("Timing")]
     [Tooltip("Per-barrier delays in seconds, mapped by index (e.g. [20,30,60,120,90])")]
@@ -66,6 +76,8 @@ public class BarrierManager : MonoBehaviour
 
     private void Awake()
     {
+        ResolvePlayerHead();
+
         int n = barriers.Length;
         _hingeA     = new Transform[n];
         _hingeB     = new Transform[n];
@@ -109,6 +121,21 @@ public class BarrierManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (!useHeadPositionFallback || playerHead == null || barriers == null)
+            return;
+
+        for (int i = 0; i < barriers.Length; i++)
+        {
+            if (_isOpen[i] || _timerActive[i])
+                continue;
+
+            if (IsHeadInsideTrigger(barriers[i].triggerZone))
+                StartBarrierTimer(i);
+        }
+    }
+
     /// <summary>True when the last barrier in the array has opened.</summary>
     public bool LastBarrierOpen =>
         _isOpen != null && _isOpen.Length > 0 && _isOpen[_isOpen.Length - 1];
@@ -138,9 +165,46 @@ public class BarrierManager : MonoBehaviour
     public void OnPlayerEnteredTrigger(int index, Collider other)
     {
         if (playerBodyCollider != null && other != playerBodyCollider) return;
+
+        StartBarrierTimer(index);
+    }
+
+    private void StartBarrierTimer(int index)
+    {
         if (_isOpen[index] || _timerActive[index]) return;
 
         StartCoroutine(DelayThenOpen(index));
+    }
+
+    private bool IsHeadInsideTrigger(Collider triggerZone)
+    {
+        if (triggerZone == null || !triggerZone.enabled || !triggerZone.gameObject.activeInHierarchy)
+            return false;
+
+        Vector3 point = playerHead.position;
+        Vector3 closest = triggerZone.ClosestPoint(point);
+        float radius = Mathf.Max(0.001f, headTriggerRadius);
+        return (closest - point).sqrMagnitude <= radius * radius;
+    }
+
+    private void ResolvePlayerHead()
+    {
+        if (playerHead != null)
+            return;
+
+#if UNITY_2023_1_OR_NEWER
+        var origin = UnityEngine.Object.FindFirstObjectByType<XROrigin>();
+#else
+        var origin = UnityEngine.Object.FindObjectOfType<XROrigin>();
+#endif
+        if (origin != null && origin.Camera != null)
+        {
+            playerHead = origin.Camera.transform;
+            return;
+        }
+
+        if (Camera.main != null)
+            playerHead = Camera.main.transform;
     }
 
     private IEnumerator DelayThenOpen(int index)

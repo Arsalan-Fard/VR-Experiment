@@ -79,12 +79,6 @@ public class SequenceSelectionUI : MonoBehaviour
         if (startButton != null)
             startButton.onClick.AddListener(OnStartClicked);
 
-        if (participantIdUpBtn != null)
-            EnsureAboveBlocker(participantIdUpBtn);
-
-        if (participantIdDownBtn != null)
-            EnsureAboveBlocker(participantIdDownBtn);
-
         // Defer first placement by one frame so the XR rig has settled its head position.
         menuRoot.SetActive(false);
         StartCoroutine(ShowMenuAfterXRInit());
@@ -213,20 +207,6 @@ public class SequenceSelectionUI : MonoBehaviour
     {
         if (participantIdLabel != null)
             participantIdLabel.text = _participantId.ToString();
-    }
-
-    // Gives a button its own Canvas so it renders above TMP_Dropdown's full-canvas Blocker.
-    // Adds both GraphicRaycaster (editor/mouse) and TrackedDeviceGraphicRaycaster (XR controllers).
-    private static void EnsureAboveBlocker(Button btn)
-    {
-        if (btn.GetComponent<Canvas>() != null) return;
-        var c = btn.gameObject.AddComponent<Canvas>();
-        c.overrideSorting = true;
-        c.sortingOrder = 100;
-        if (btn.GetComponent<GraphicRaycaster>() == null)
-            btn.gameObject.AddComponent<GraphicRaycaster>();
-        if (btn.GetComponent<TrackedDeviceGraphicRaycaster>() == null)
-            btn.gameObject.AddComponent<TrackedDeviceGraphicRaycaster>();
     }
 
     // Returns 1=C1, 2=C2, or 0 if nothing (blank) is selected.

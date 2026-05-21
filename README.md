@@ -122,6 +122,7 @@ All markers are sent as strings on the `Quest.Events` stream via `QuestEventOutl
 | `barrier_trigger:{name}` | BarrierManager | Player enters barrier trigger zone |
 | `barrier_timer_start:{name}:{d}s` | BarrierManager | Barrier countdown begins |
 | `barrier_timer_end:{name}` | BarrierManager | Barrier countdown finishes |
+| `barrier_manual_open:{name}` | BarrierManager | Right B manually opens the next closed barrier |
 | `barrier_open:{name}` | BarrierManager | Barrier door opens |
 | `last_barrier_open` | BarrierManager | Final barrier opens |
 
@@ -155,6 +156,7 @@ All markers are sent as strings on the `Quest.Events` stream via `QuestEventOutl
 | Left Menu | Toggle sequence selection menu |
 | Left X | Toggle familiarity/practice environment |
 | Left Y (on return plane) | Advance from middle phase to Condition 2 |
+| Right B | Manually open the next closed turnstile/barrier |
 | Grab | Select box / interact with cubes |
 | Hover (on door handle) | Open door (2s hover hold) |
 

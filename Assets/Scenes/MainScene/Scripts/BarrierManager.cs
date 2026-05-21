@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.XR;
 
 /// <summary>
 /// Opens turnstile barriers after a configurable delay when the player
@@ -16,6 +17,14 @@ using UnityEngine;
 /// </summary>
 public class BarrierManager : MonoBehaviour
 {
+    public enum ControllerButton
+    {
+        Primary,
+        Secondary,
+        Grip,
+        Trigger
+    }
+
     [Serializable]
     public struct BarrierEntry
     {
@@ -59,6 +68,22 @@ public class BarrierManager : MonoBehaviour
     /// <summary>Raised once when every barrier in the array has opened.</summary>
     public event System.Action OnAllBarriersOpen;
 
+    [Header("Manual Barrier Control")]
+    [Tooltip("Allows an experimenter to open/close barriers without waiting for trigger/timer logic.")]
+    public bool allowManualBarrierControl = true;
+
+    [Tooltip("Controller used to manually open the next closed barrier.")]
+    public XRNode manualOpenController = XRNode.LeftHand;
+
+    [Tooltip("Button used to manually open the next closed barrier.")]
+    public ControllerButton manualOpenButton = ControllerButton.Trigger;
+
+    [Tooltip("Controller used to manually close the last opened barrier.")]
+    public XRNode manualCloseController = XRNode.LeftHand;
+
+    [Tooltip("Button used to manually close the last opened barrier.")]
+    public ControllerButton manualCloseButton = ControllerButton.Grip;
+
     [Header("Open Animation")]
     [Tooltip("Angle (degrees) each glass panel swings open")]
     public float openAngle = 90f;
@@ -73,6 +98,9 @@ public class BarrierManager : MonoBehaviour
     private Quaternion[] _closedB, _openB;
     private bool[] _isOpen;
     private bool[] _timerActive;
+    private Coroutine[] _timerRoutines;
+    private bool _manualOpenWasPressed;
+    private bool _manualCloseWasPressed;
 
     private void Awake()
     {
@@ -87,6 +115,7 @@ public class BarrierManager : MonoBehaviour
         _openB      = new Quaternion[n];
         _isOpen     = new bool[n];
         _timerActive = new bool[n];
+        _timerRoutines = new Coroutine[n];
 
         for (int i = 0; i < n; i++)
         {
@@ -123,6 +152,8 @@ public class BarrierManager : MonoBehaviour
 
     private void Update()
     {
+        HandleManualBarrierInput();
+
         if (!useHeadPositionFallback || playerHead == null || barriers == null)
             return;
 
@@ -171,9 +202,97 @@ public class BarrierManager : MonoBehaviour
 
     private void StartBarrierTimer(int index)
     {
+        if (barriers == null || index < 0 || index >= barriers.Length)
+            return;
+
         if (_isOpen[index] || _timerActive[index]) return;
 
-        StartCoroutine(DelayThenOpen(index));
+        _timerRoutines[index] = StartCoroutine(DelayThenOpen(index));
+    }
+
+    private void HandleManualBarrierInput()
+    {
+        if (!allowManualBarrierControl || barriers == null || barriers.Length == 0)
+            return;
+
+        bool openPressed = IsManualButtonPressed(manualOpenController, manualOpenButton);
+        if (openPressed && !_manualOpenWasPressed)
+            OpenNextClosedBarrierManually();
+
+        bool closePressed = IsManualButtonPressed(manualCloseController, manualCloseButton);
+        if (closePressed && !_manualCloseWasPressed)
+            CloseLastOpenBarrierManually();
+
+        _manualOpenWasPressed = openPressed;
+        _manualCloseWasPressed = closePressed;
+    }
+
+    private bool IsManualButtonPressed(XRNode controllerNode, ControllerButton button)
+    {
+        var controller = InputDevices.GetDeviceAtXRNode(controllerNode);
+        if (!controller.isValid)
+            return false;
+
+        var usage = GetButtonUsage(button);
+
+        return controller.TryGetFeatureValue(usage, out bool pressed) && pressed;
+    }
+
+    private static InputFeatureUsage<bool> GetButtonUsage(ControllerButton button)
+    {
+        switch (button)
+        {
+            case ControllerButton.Primary:
+                return CommonUsages.primaryButton;
+            case ControllerButton.Secondary:
+                return CommonUsages.secondaryButton;
+            case ControllerButton.Grip:
+                return CommonUsages.gripButton;
+            case ControllerButton.Trigger:
+                return CommonUsages.triggerButton;
+            default:
+                return CommonUsages.primaryButton;
+        }
+    }
+
+    private void OpenNextClosedBarrierManually()
+    {
+        for (int i = 0; i < barriers.Length; i++)
+        {
+            if (_isOpen[i])
+                continue;
+
+            if (_timerRoutines != null && _timerRoutines[i] != null)
+            {
+                StopCoroutine(_timerRoutines[i]);
+                _timerRoutines[i] = null;
+            }
+
+            _timerActive[i] = false;
+
+            string triggerName = barriers[i].triggerZone != null
+                ? barriers[i].triggerZone.name : i.ToString();
+
+            QuestEventOutlet.Send($"barrier_manual_open:{triggerName}");
+            StartCoroutine(OpenBarrier(i, triggerName));
+            return;
+        }
+    }
+
+    private void CloseLastOpenBarrierManually()
+    {
+        for (int i = barriers.Length - 1; i >= 0; i--)
+        {
+            if (!_isOpen[i] || _timerActive[i])
+                continue;
+
+            string triggerName = barriers[i].triggerZone != null
+                ? barriers[i].triggerZone.name : i.ToString();
+
+            QuestEventOutlet.Send($"barrier_manual_close:{triggerName}");
+            StartCoroutine(CloseBarrier(i, triggerName));
+            return;
+        }
     }
 
     private bool IsHeadInsideTrigger(Collider triggerZone)
@@ -222,6 +341,18 @@ public class BarrierManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         QuestEventOutlet.Send($"barrier_timer_end:{triggerName}");
+        _timerRoutines[index] = null;
+
+        yield return OpenBarrier(index, triggerName);
+    }
+
+    private IEnumerator OpenBarrier(int index, string triggerName)
+    {
+        if (_isOpen[index])
+            yield break;
+
+        _isOpen[index] = true;
+        _timerActive[index] = true;
 
         // Animate the glass panels swinging open
         float elapsed = 0f;
@@ -242,7 +373,6 @@ public class BarrierManager : MonoBehaviour
         if (_hingeA[index]) _hingeA[index].localRotation = _openA[index];
         if (_hingeB[index]) _hingeB[index].localRotation = _openB[index];
 
-        _isOpen[index] = true;
         _timerActive[index] = false;
 
         QuestEventOutlet.Send($"barrier_open:{triggerName}");
@@ -254,10 +384,47 @@ public class BarrierManager : MonoBehaviour
         }
     }
 
+    private IEnumerator CloseBarrier(int index, string triggerName)
+    {
+        if (!_isOpen[index])
+            yield break;
+
+        _timerActive[index] = true;
+
+        Quaternion startA = _hingeA[index] ? _hingeA[index].localRotation : Quaternion.identity;
+        Quaternion startB = _hingeB[index] ? _hingeB[index].localRotation : Quaternion.identity;
+
+        float elapsed = 0f;
+        while (elapsed < animationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / animationDuration));
+
+            if (_hingeA[index])
+                _hingeA[index].localRotation = Quaternion.Slerp(startA, _closedA[index], t);
+            if (_hingeB[index])
+                _hingeB[index].localRotation = Quaternion.Slerp(startB, _closedB[index], t);
+
+            yield return null;
+        }
+
+        if (_hingeA[index]) _hingeA[index].localRotation = _closedA[index];
+        if (_hingeB[index]) _hingeB[index].localRotation = _closedB[index];
+
+        _isOpen[index] = false;
+        _timerActive[index] = false;
+
+        QuestEventOutlet.Send($"barrier_close:{triggerName}");
+    }
+
     /// <summary>Reset all barriers to closed (useful when switching conditions).</summary>
     public void ResetAll()
     {
         StopAllCoroutines();
+
+        _manualOpenWasPressed = false;
+        _manualCloseWasPressed = false;
+
         if (_hingeA == null) return;
 
         for (int i = 0; i < barriers.Length; i++)
@@ -266,6 +433,8 @@ public class BarrierManager : MonoBehaviour
             if (_hingeB[i]) _hingeB[i].localRotation = _closedB[i];
             _isOpen[i] = false;
             _timerActive[i] = false;
+            if (_timerRoutines != null)
+                _timerRoutines[i] = null;
         }
     }
 

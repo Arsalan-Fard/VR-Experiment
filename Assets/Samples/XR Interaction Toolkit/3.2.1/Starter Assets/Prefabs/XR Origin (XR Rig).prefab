@@ -60,7 +60,7 @@ MonoBehaviour:
   m_SnapTurn: {fileID: -7374733323251553461, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   m_Move: {fileID: 6972639530819350904, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   m_UIScroll: {fileID: 2464016903823916871, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  m_SmoothMotionEnabled: 1
+  m_SmoothMotionEnabled: 0
   m_SmoothTurnEnabled: 0
   m_NearFarEnableTeleportDuringNearInteraction: 1
   m_UIScrollingEnabled: 1
@@ -237,8 +237,8 @@ MonoBehaviour:
   m_RayInteractor: {fileID: 0}
   m_NearFarInteractor: {fileID: 1883230248363655243}
   m_TeleportInteractor: {fileID: 2449787133337329425}
-  m_TeleportMode: {fileID: -8061240218431744966, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  m_TeleportModeCancel: {fileID: 2307464322626738743, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  m_TeleportMode: {fileID: 0}
+  m_TeleportModeCancel: {fileID: 0}
   m_Turn: {fileID: -6493913391331992944, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   m_SnapTurn: {fileID: -8525429354371678379, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   m_Move: {fileID: -8198699208435500284, guid: c348712bda248c246b8c49b3db54643f, type: 3}
@@ -2038,6 +2038,10 @@ PrefabInstance:
     - target: {fileID: 2761784063978902507, guid: c1800acf6366418a9b5f610249000331, type: 3}
       propertyPath: m_Name
       value: Teleport Interactor
+      objectReference: {fileID: 0}
+    - target: {fileID: 3448426214904589657, guid: c1800acf6366418a9b5f610249000331, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3616344554909481683, guid: c1800acf6366418a9b5f610249000331, type: 3}
       propertyPath: m_HapticImpulsePlayer

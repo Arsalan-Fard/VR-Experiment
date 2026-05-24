@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.XR.CoreUtils;
@@ -22,6 +23,9 @@ public class RoomManager : MonoBehaviour
 
     [Header("Timing")]
     public float lockSeconds = 5f;
+
+    /// <summary>Raised after the room timer ends and any glass-room visuals have been restored.</summary>
+    public event Action<RoomManager> OnTimerFinished;
 
     // [Header("Timer UI (always visible)")]
     // public TMP_Text timerText;
@@ -194,6 +198,8 @@ public class RoomManager : MonoBehaviour
             if (glassRoomObject != null)
                 glassRoomObject.SetActive(false);
         }
+
+        OnTimerFinished?.Invoke(this);
 
         // Keep trigger disabled until the player exits (OnTriggerExit will re-enable it)
         _running = false;

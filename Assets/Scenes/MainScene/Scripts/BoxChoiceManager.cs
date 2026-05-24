@@ -10,6 +10,11 @@ public class BoxChoiceManager : MonoBehaviour
     [Header("Rating UI (shown after After Select UI)")]
     public GameObject ratingPanel;
 
+    [Header("2D Valence/Arousal grid (shown by the slider; kept hidden otherwise)")]
+    [Tooltip("Assign the GridPanel so it can be force-hidden on start/reset. " +
+             "The slider itself shows it at the right time.")]
+    public GameObject gridPanel;
+
     [Header("After Rating UI (shown after rating, before door opens)")]
     public GameObject afterRatingPanel;
 
@@ -55,6 +60,7 @@ public class BoxChoiceManager : MonoBehaviour
         if (nextPanel) nextPanel.SetActive(false);
         if (ratingPanel) ratingPanel.SetActive(false);
         if (afterRatingPanel) afterRatingPanel.SetActive(false);
+        if (gridPanel) gridPanel.SetActive(false);
     }
 
     public void ChooseBlack() { QuestEventOutlet.Send("box_choose_black"); Choose(); }
@@ -99,6 +105,7 @@ public class BoxChoiceManager : MonoBehaviour
         // QuestEventOutlet.Send($"box_rating_{rating}");
 
         if (ratingPanel) ratingPanel.SetActive(false);
+        if (gridPanel) gridPanel.SetActive(false);
         if (afterRatingPanel) afterRatingPanel.SetActive(true);
 
         Debug.Log($"[Experiment] Rating submitted: {rating} — After Rating UI shown");
@@ -149,6 +156,7 @@ public class BoxChoiceManager : MonoBehaviour
         if (nextPanel) nextPanel.SetActive(false);
         if (ratingPanel) ratingPanel.SetActive(false);
         if (afterRatingPanel) afterRatingPanel.SetActive(false);
+        if (gridPanel) gridPanel.SetActive(false);
 
         // Close doors for a clean start
         if (closeDoorImmediately)

@@ -65,6 +65,9 @@ public class BarrierManager : MonoBehaviour
     [Tooltip("Barrier indices whose delay = openDelays[i] + glassRoom.lockSeconds (e.g. [4] for Condition 1, [1,3] for Condition 2)")]
     public int[] addGlassRoomLockIndices;
 
+    /// <summary>Raised every time one barrier finishes opening. Provides zero-based barrier index and trigger name.</summary>
+    public event Action<int, string> OnBarrierOpened;
+
     /// <summary>Raised once when every barrier in the array has opened.</summary>
     public event System.Action OnAllBarriersOpen;
 
@@ -376,6 +379,7 @@ public class BarrierManager : MonoBehaviour
         _timerActive[index] = false;
 
         QuestEventOutlet.Send($"barrier_open:{triggerName}");
+        OnBarrierOpened?.Invoke(index, triggerName);
 
         if (index == barriers.Length - 1)
         {

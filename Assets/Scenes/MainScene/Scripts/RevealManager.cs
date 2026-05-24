@@ -16,6 +16,11 @@ public class RevealManager : MonoBehaviour
     [Header("Rating UI (shown each condition, re-enabled on reset)")]
     public GameObject ratingUI;    // disabled by default
 
+    [Header("2D Valence/Arousal grid (kept hidden until rating UI shows)")]
+    [Tooltip("Assign the reveal GridPanel so it can be force-hidden until " +
+             "the rating slider is shown. The slider itself reveals it.")]
+    public GameObject gridPanel;
+
     [Header("Reveal UI (World Space Canvases)")]
     public GameObject failUI;      // disabled by default
     public GameObject successUI;   // disabled by default
@@ -26,6 +31,11 @@ public class RevealManager : MonoBehaviour
 
     [Header("Behavior")]
     public bool triggerOncePerCondition = true;
+
+    [Tooltip("If ON, the reveal door opens automatically as soon as the rating " +
+             "is submitted (no handle click needed). If OFF, the rating only " +
+             "arms the handle and the player must click it.")]
+    public bool autoOpenAfterRating = true;
 
     private bool _isActiveRevealTrigger = false;
     private bool _showSuccessThisCondition = false;
@@ -65,6 +75,9 @@ public class RevealManager : MonoBehaviour
             if (_ratingSliderUI != null)
                 _ratingSliderUI.onRatingDone += OnRatingDone;
         }
+
+        // Grid Canvas is independent; keep it hidden until the slider shows it.
+        if (gridPanel) gridPanel.SetActive(false);
     }
 
     private void OnDestroy()
@@ -103,6 +116,19 @@ public class RevealManager : MonoBehaviour
     private void OnRatingDone()
     {
         _ratingDone = true;
+
+        // Auto-open: skip the handle click and reveal immediately.
+        if (autoOpenAfterRating)
+        {
+            if (_isActiveRevealTrigger
+                && !(triggerOncePerCondition && _triggeredThisCondition)
+                && stateManager != null)
+            {
+                PerformReveal();
+                Debug.Log("[RevealManager] Rating submitted – door opened automatically.");
+            }
+            return;
+        }
 
         // Arm handles now so the player can open the reveal door
         if (_isActiveRevealTrigger && HasHandles)
@@ -168,6 +194,12 @@ public class RevealManager : MonoBehaviour
     {
         _triggeredThisCondition = false;
         _ratingDone = false;
+
+        // Grid is always hidden on reset; the slider re-shows it when the
+        // rating UI is enabled. Also reset the slider so it starts from the
+        // grid again on the next condition.
+        if (gridPanel) gridPanel.SetActive(false);
+        if (_ratingSliderUI != null) _ratingSliderUI.ResetForReuse();
 
         // Hide rating UI until the active condition's barriers complete
         if (ratingUI)

@@ -51,6 +51,10 @@ public class StayOnPlaneToAdvance : MonoBehaviour
     private void Update()
     {
         if (!_armed || _advanced) return;
+        // Ignore Y while familiarity mode is active — advancing the condition
+        // mid-familiarity invalidates the renderer/collider snapshot that gets
+        // restored on the next X press, leaving walls in mixed visibility.
+        if (FamilarityManager.IsFamiliarityActive) return;
         if (!_playerOnPlane && !IsHeadOverPlane()) return;
 
         if (IsYButtonPressed())
